@@ -1,37 +1,42 @@
 # video-convertor
 
-#### 介绍
+#### Brief
 This video conversion tool accepts most video formats as input and converts them exclusively to MP4.
 
-#### 软件架构
-软件架构说明
+#### Architecture
+Software architecture description
+Root directory of the project
+- `src/`: Source code directory
+- `docs/`: Documentation directory
+- `tests/`: Test code directory
+- `README.md`: Project readme file
+- `LICENSE`: Project license file
 
 
-#### 安装教程
+#### Installation
 
 1.  xxxx
 2.  xxxx
 3.  xxxx
 
-#### 使用说明
+#### Usage
 
 1.  xxxx
 2.  xxxx
 3.  xxxx
 
-#### 参与贡献
+#### Contributing
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+1.  Fork this repository
+2.  Create a new branch Feat_xxx
+3.  Commit your code
+4.  Create a new Pull Request
 
 
-#### 特技
+#### Special Thanks
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+2.  Gitee offical website [blog.gitee.com](https://blog.gitee.com)
+3.  You can access [https://gitee.com/explore](https://gitee.com/explore) to learn more about Gitee's excellent open source projects.
+4.  [GVP](https://gitee.com/gvp) is the full name of Gitee Most Valuable Open Source Project, which is an excellent open source project selected by comprehensive evaluation.
+5.  Gitee official provides the use manual [https://gitee.com/help](https://gitee.com/help)
+6.  Gitee cover character is a column to show Gitee member's valuable contribution [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)

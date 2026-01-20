@@ -6,7 +6,7 @@
     "configurations": [
 
         {
-            "name": "Python Debugger: VideoConvertor",
+            "name": "Python Debugger: video-convertor",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
