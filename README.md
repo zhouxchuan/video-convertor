@@ -15,15 +15,20 @@ Root directory of the project
 
 #### Installation
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1.  Clone this repository: `git clone https://gitee.com/zhou-xiao-chuan/video-convertor.git`
+2.  Navigate to the project directory: `cd video-convertor`
+3.  Create a virtual environment: `python -m venv venv`
+4.  Activate the virtual environment:
+    - On Windows: `venv\Scripts\activate`
+    - On macOS and Linux: `source venv/bin/activate`
+5.  Install dependencies: `pip install -r requirements.txt`
 
 #### Usage
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1.  Select a source file or directory to convert.
+2.  Specify the output file or directory.
+3.  You can setup the conversion parameters, such as video codec, audio codec, resolution, bitrate, etc.
+4.  Click the "Convert" button to start the conversion process.
 
 #### Contributing
 
