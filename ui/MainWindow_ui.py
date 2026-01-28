@@ -15,455 +15,267 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QFrame, QGroupBox,
-    QHBoxLayout, QLabel, QLineEdit, QMainWindow,
-    QProgressBar, QPushButton, QSizePolicy, QSpacerItem,
-    QSpinBox, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QFrame,
+    QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
+    QLabel, QLineEdit, QMainWindow, QProgressBar,
+    QPushButton, QSizePolicy, QSpacerItem, QTreeWidget,
+    QTreeWidgetItem, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(702, 489)
+        MainWindow.resize(897, 588)
         MainWindow.setMaximumSize(QSize(16777215, 16777215))
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout_2 = QVBoxLayout(self.centralwidget)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.verticalLayout_2.setContentsMargins(6, 6, 6, 6)
-        self.verticalLayout = QVBoxLayout()
+        self.inputGroupBox = QGroupBox(self.centralwidget)
+        self.inputGroupBox.setObjectName(u"inputGroupBox")
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.inputGroupBox.sizePolicy().hasHeightForWidth())
+        self.inputGroupBox.setSizePolicy(sizePolicy)
+        self.inputGroupBox.setMinimumSize(QSize(0, 250))
+        self.inputGroupBox.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignTop)
+        self.verticalLayout = QVBoxLayout(self.inputGroupBox)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.sourceFileLabel = QLabel(self.centralwidget)
+        self.horizontalLayout_21 = QHBoxLayout()
+        self.horizontalLayout_21.setObjectName(u"horizontalLayout_21")
+        self.sourceFileLabel = QLabel(self.inputGroupBox)
         self.sourceFileLabel.setObjectName(u"sourceFileLabel")
 
-        self.verticalLayout.addWidget(self.sourceFileLabel)
+        self.horizontalLayout_21.addWidget(self.sourceFileLabel)
 
-        self.horizontalLayout = QHBoxLayout()
-        self.horizontalLayout.setSpacing(2)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.srcFileBox = QLineEdit(self.centralwidget)
-        self.srcFileBox.setObjectName(u"srcFileBox")
-        self.srcFileBox.setEnabled(True)
-        self.srcFileBox.setReadOnly(True)
+        self.inputFileBox = QLineEdit(self.inputGroupBox)
+        self.inputFileBox.setObjectName(u"inputFileBox")
+        self.inputFileBox.setEnabled(True)
+        self.inputFileBox.setFrame(True)
+        self.inputFileBox.setReadOnly(True)
 
-        self.horizontalLayout.addWidget(self.srcFileBox)
+        self.horizontalLayout_21.addWidget(self.inputFileBox)
 
-        self.srcFileButton = QPushButton(self.centralwidget)
-        self.srcFileButton.setObjectName(u"srcFileButton")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.srcFileButton.sizePolicy().hasHeightForWidth())
-        self.srcFileButton.setSizePolicy(sizePolicy)
-        self.srcFileButton.setMaximumSize(QSize(35, 16777215))
-        self.srcFileButton.setBaseSize(QSize(0, 0))
-        self.srcFileButton.setAutoDefault(False)
+        self.inputFileButton = QPushButton(self.inputGroupBox)
+        self.inputFileButton.setObjectName(u"inputFileButton")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.inputFileButton.sizePolicy().hasHeightForWidth())
+        self.inputFileButton.setSizePolicy(sizePolicy1)
+        self.inputFileButton.setMaximumSize(QSize(35, 16777215))
+        self.inputFileButton.setBaseSize(QSize(0, 0))
+        self.inputFileButton.setAutoDefault(False)
 
-        self.horizontalLayout.addWidget(self.srcFileButton)
+        self.horizontalLayout_21.addWidget(self.inputFileButton)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.verticalLayout.addLayout(self.horizontalLayout_21)
 
-        self.destinationFileLabel = QLabel(self.centralwidget)
-        self.destinationFileLabel.setObjectName(u"destinationFileLabel")
+        self.inputFileTreeWidget = QTreeWidget(self.inputGroupBox)
+        __qtreewidgetitem = QTreeWidgetItem()
+        __qtreewidgetitem.setText(0, u"1");
+        self.inputFileTreeWidget.setHeaderItem(__qtreewidgetitem)
+        self.inputFileTreeWidget.setObjectName(u"inputFileTreeWidget")
+        self.inputFileTreeWidget.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.inputFileTreeWidget.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.inputFileTreeWidget.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.inputFileTreeWidget.setIndentation(10)
+        self.inputFileTreeWidget.setRootIsDecorated(True)
+        self.inputFileTreeWidget.setWordWrap(False)
+        self.inputFileTreeWidget.setHeaderHidden(True)
 
-        self.verticalLayout.addWidget(self.destinationFileLabel)
+        self.verticalLayout.addWidget(self.inputFileTreeWidget)
 
         self.horizontalLayout_2 = QHBoxLayout()
-        self.horizontalLayout_2.setSpacing(2)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.destFileBox = QLineEdit(self.centralwidget)
-        self.destFileBox.setObjectName(u"destFileBox")
-        self.destFileBox.setEnabled(True)
-        self.destFileBox.setReadOnly(False)
+        self.detailButton = QPushButton(self.inputGroupBox)
+        self.detailButton.setObjectName(u"detailButton")
 
-        self.horizontalLayout_2.addWidget(self.destFileBox)
+        self.horizontalLayout_2.addWidget(self.detailButton)
 
-        self.destFileButton = QPushButton(self.centralwidget)
-        self.destFileButton.setObjectName(u"destFileButton")
-        self.destFileButton.setMaximumSize(QSize(35, 16777215))
-        self.destFileButton.setAutoDefault(False)
+        self.streamLabel = QLabel(self.inputGroupBox)
+        self.streamLabel.setObjectName(u"streamLabel")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.streamLabel.sizePolicy().hasHeightForWidth())
+        self.streamLabel.setSizePolicy(sizePolicy2)
+        self.streamLabel.setFrameShape(QFrame.Shape.StyledPanel)
 
-        self.horizontalLayout_2.addWidget(self.destFileButton)
+        self.horizontalLayout_2.addWidget(self.streamLabel)
+
+        self.sortButton = QPushButton(self.inputGroupBox)
+        self.sortButton.setObjectName(u"sortButton")
+
+        self.horizontalLayout_2.addWidget(self.sortButton)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
 
-        self.verticalLayout_2.addLayout(self.verticalLayout)
+        self.verticalLayout_2.addWidget(self.inputGroupBox)
 
-        self.horizontalLayout_18 = QHBoxLayout()
-        self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
-        self.horizontalLayout_18.setContentsMargins(-1, 6, -1, 6)
-        self.groupBox_2 = QGroupBox(self.centralwidget)
-        self.groupBox_2.setObjectName(u"groupBox_2")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        sizePolicy1.setHorizontalStretch(1)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.groupBox_2.sizePolicy().hasHeightForWidth())
-        self.groupBox_2.setSizePolicy(sizePolicy1)
-        self.groupBox_2.setMinimumSize(QSize(0, 250))
-        self.groupBox_2.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
-        self.verticalLayout_4 = QVBoxLayout(self.groupBox_2)
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.horizontalLayout_10 = QHBoxLayout()
-        self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
-        self.sourceDurationLabel = QLabel(self.groupBox_2)
-        self.sourceDurationLabel.setObjectName(u"sourceDurationLabel")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.sourceDurationLabel.sizePolicy().hasHeightForWidth())
-        self.sourceDurationLabel.setSizePolicy(sizePolicy2)
-        self.sourceDurationLabel.setMinimumSize(QSize(100, 0))
-        self.sourceDurationLabel.setMaximumSize(QSize(16777215, 16777215))
+        self.outputGroupBox = QGroupBox(self.centralwidget)
+        self.outputGroupBox.setObjectName(u"outputGroupBox")
+        self.outputGroupBox.setEnabled(True)
+        sizePolicy.setHeightForWidth(self.outputGroupBox.sizePolicy().hasHeightForWidth())
+        self.outputGroupBox.setSizePolicy(sizePolicy)
+        self.outputGroupBox.setMinimumSize(QSize(0, 250))
+        self.outputGroupBox.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignTop)
+        self.gridLayout = QGridLayout(self.outputGroupBox)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.destinationFileLabel = QLabel(self.outputGroupBox)
+        self.destinationFileLabel.setObjectName(u"destinationFileLabel")
 
-        self.horizontalLayout_10.addWidget(self.sourceDurationLabel)
+        self.horizontalLayout.addWidget(self.destinationFileLabel)
 
-        self.sourceDurationBox = QLineEdit(self.groupBox_2)
-        self.sourceDurationBox.setObjectName(u"sourceDurationBox")
-        self.sourceDurationBox.setEnabled(False)
-        self.sourceDurationBox.setAlignment(Qt.AlignCenter)
-        self.sourceDurationBox.setReadOnly(True)
+        self.outputFileBox = QLineEdit(self.outputGroupBox)
+        self.outputFileBox.setObjectName(u"outputFileBox")
+        self.outputFileBox.setEnabled(True)
+        self.outputFileBox.setReadOnly(False)
 
-        self.horizontalLayout_10.addWidget(self.sourceDurationBox)
+        self.horizontalLayout.addWidget(self.outputFileBox)
+
+        self.outputFileButton = QPushButton(self.outputGroupBox)
+        self.outputFileButton.setObjectName(u"outputFileButton")
+        self.outputFileButton.setMaximumSize(QSize(35, 16777215))
+        self.outputFileButton.setAutoDefault(False)
+
+        self.horizontalLayout.addWidget(self.outputFileButton)
 
 
-        self.verticalLayout_4.addLayout(self.horizontalLayout_10)
+        self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 2)
 
-        self.horizontalLayout_17 = QHBoxLayout()
-        self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
-        self.sourceVideoEncoderLabel = QLabel(self.groupBox_2)
-        self.sourceVideoEncoderLabel.setObjectName(u"sourceVideoEncoderLabel")
-        self.sourceVideoEncoderLabel.setMinimumSize(QSize(100, 0))
-        self.sourceVideoEncoderLabel.setMaximumSize(QSize(100, 16777215))
-
-        self.horizontalLayout_17.addWidget(self.sourceVideoEncoderLabel)
-
-        self.sourceVideoEncoderBox = QLineEdit(self.groupBox_2)
-        self.sourceVideoEncoderBox.setObjectName(u"sourceVideoEncoderBox")
-        self.sourceVideoEncoderBox.setEnabled(False)
-        self.sourceVideoEncoderBox.setAlignment(Qt.AlignCenter)
-        self.sourceVideoEncoderBox.setReadOnly(True)
-
-        self.horizontalLayout_17.addWidget(self.sourceVideoEncoderBox)
-
-
-        self.verticalLayout_4.addLayout(self.horizontalLayout_17)
-
-        self.horizontalLayout_12 = QHBoxLayout()
-        self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
-        self.sourceVideoBitrateLabel = QLabel(self.groupBox_2)
-        self.sourceVideoBitrateLabel.setObjectName(u"sourceVideoBitrateLabel")
-        self.sourceVideoBitrateLabel.setMinimumSize(QSize(100, 0))
-        self.sourceVideoBitrateLabel.setMaximumSize(QSize(100, 16777215))
-
-        self.horizontalLayout_12.addWidget(self.sourceVideoBitrateLabel)
-
-        self.sourceVideoBitrateBox = QLineEdit(self.groupBox_2)
-        self.sourceVideoBitrateBox.setObjectName(u"sourceVideoBitrateBox")
-        self.sourceVideoBitrateBox.setEnabled(False)
-        self.sourceVideoBitrateBox.setAlignment(Qt.AlignCenter)
-        self.sourceVideoBitrateBox.setReadOnly(True)
-
-        self.horizontalLayout_12.addWidget(self.sourceVideoBitrateBox)
-
-
-        self.verticalLayout_4.addLayout(self.horizontalLayout_12)
-
-        self.horizontalLayout_13 = QHBoxLayout()
-        self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
-        self.sourceVideoFrameLabel = QLabel(self.groupBox_2)
-        self.sourceVideoFrameLabel.setObjectName(u"sourceVideoFrameLabel")
-        self.sourceVideoFrameLabel.setMinimumSize(QSize(100, 0))
-        self.sourceVideoFrameLabel.setMaximumSize(QSize(100, 16777215))
-
-        self.horizontalLayout_13.addWidget(self.sourceVideoFrameLabel)
-
-        self.sourceVideoFramerateBox = QLineEdit(self.groupBox_2)
-        self.sourceVideoFramerateBox.setObjectName(u"sourceVideoFramerateBox")
-        self.sourceVideoFramerateBox.setEnabled(False)
-        self.sourceVideoFramerateBox.setAlignment(Qt.AlignCenter)
-        self.sourceVideoFramerateBox.setReadOnly(True)
-
-        self.horizontalLayout_13.addWidget(self.sourceVideoFramerateBox)
-
-
-        self.verticalLayout_4.addLayout(self.horizontalLayout_13)
-
-        self.horizontalLayout_14 = QHBoxLayout()
-        self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
-        self.sourceVideoSizeLabel = QLabel(self.groupBox_2)
-        self.sourceVideoSizeLabel.setObjectName(u"sourceVideoSizeLabel")
-        self.sourceVideoSizeLabel.setMinimumSize(QSize(100, 0))
-        self.sourceVideoSizeLabel.setMaximumSize(QSize(100, 16777215))
-
-        self.horizontalLayout_14.addWidget(self.sourceVideoSizeLabel)
-
-        self.sourceVideoSizeBox = QLineEdit(self.groupBox_2)
-        self.sourceVideoSizeBox.setObjectName(u"sourceVideoSizeBox")
-        self.sourceVideoSizeBox.setEnabled(False)
-        self.sourceVideoSizeBox.setAlignment(Qt.AlignCenter)
-        self.sourceVideoSizeBox.setReadOnly(True)
-
-        self.horizontalLayout_14.addWidget(self.sourceVideoSizeBox)
-
-
-        self.verticalLayout_4.addLayout(self.horizontalLayout_14)
-
-        self.horizontalLayout_15 = QHBoxLayout()
-        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
-        self.sourceAudioEncoderLabel = QLabel(self.groupBox_2)
-        self.sourceAudioEncoderLabel.setObjectName(u"sourceAudioEncoderLabel")
-        self.sourceAudioEncoderLabel.setMinimumSize(QSize(100, 0))
-        self.sourceAudioEncoderLabel.setMaximumSize(QSize(100, 16777215))
-
-        self.horizontalLayout_15.addWidget(self.sourceAudioEncoderLabel)
-
-        self.sourceAudioEncoderBox = QLineEdit(self.groupBox_2)
-        self.sourceAudioEncoderBox.setObjectName(u"sourceAudioEncoderBox")
-        self.sourceAudioEncoderBox.setEnabled(False)
-        self.sourceAudioEncoderBox.setAlignment(Qt.AlignCenter)
-        self.sourceAudioEncoderBox.setReadOnly(True)
-
-        self.horizontalLayout_15.addWidget(self.sourceAudioEncoderBox)
-
-
-        self.verticalLayout_4.addLayout(self.horizontalLayout_15)
-
-        self.horizontalLayout_16 = QHBoxLayout()
-        self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
-        self.sourceAudioBitstreamsLabel = QLabel(self.groupBox_2)
-        self.sourceAudioBitstreamsLabel.setObjectName(u"sourceAudioBitstreamsLabel")
-        self.sourceAudioBitstreamsLabel.setMinimumSize(QSize(100, 0))
-        self.sourceAudioBitstreamsLabel.setMaximumSize(QSize(100, 16777215))
-
-        self.horizontalLayout_16.addWidget(self.sourceAudioBitstreamsLabel)
-
-        self.sourceAudioBitrateBox = QLineEdit(self.groupBox_2)
-        self.sourceAudioBitrateBox.setObjectName(u"sourceAudioBitrateBox")
-        self.sourceAudioBitrateBox.setEnabled(False)
-        self.sourceAudioBitrateBox.setAlignment(Qt.AlignCenter)
-        self.sourceAudioBitrateBox.setReadOnly(True)
-
-        self.horizontalLayout_16.addWidget(self.sourceAudioBitrateBox)
-
-
-        self.verticalLayout_4.addLayout(self.horizontalLayout_16)
-
-        self.horizontalLayout_19 = QHBoxLayout()
-        self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
-        self.sourceAudioSampleLabel = QLabel(self.groupBox_2)
-        self.sourceAudioSampleLabel.setObjectName(u"sourceAudioSampleLabel")
-        self.sourceAudioSampleLabel.setMinimumSize(QSize(100, 0))
-        self.sourceAudioSampleLabel.setMaximumSize(QSize(100, 16777215))
-
-        self.horizontalLayout_19.addWidget(self.sourceAudioSampleLabel)
-
-        self.sourceAudioSampleBox = QLineEdit(self.groupBox_2)
-        self.sourceAudioSampleBox.setObjectName(u"sourceAudioSampleBox")
-        self.sourceAudioSampleBox.setEnabled(False)
-        self.sourceAudioSampleBox.setAlignment(Qt.AlignCenter)
-        self.sourceAudioSampleBox.setReadOnly(True)
-
-        self.horizontalLayout_19.addWidget(self.sourceAudioSampleBox)
-
-
-        self.verticalLayout_4.addLayout(self.horizontalLayout_19)
-
-
-        self.horizontalLayout_18.addWidget(self.groupBox_2)
-
-        self.groupBox = QGroupBox(self.centralwidget)
-        self.groupBox.setObjectName(u"groupBox")
-        self.groupBox.setEnabled(True)
-        sizePolicy1.setHeightForWidth(self.groupBox.sizePolicy().hasHeightForWidth())
-        self.groupBox.setSizePolicy(sizePolicy1)
-        self.groupBox.setMinimumSize(QSize(0, 250))
-        self.groupBox.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
-        self.verticalLayout_5 = QVBoxLayout(self.groupBox)
-        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.label = QLabel(self.groupBox)
+        self.label = QLabel(self.outputGroupBox)
         self.label.setObjectName(u"label")
-        self.label.setMinimumSize(QSize(100, 0))
-        self.label.setMaximumSize(QSize(100, 16777215))
+        self.label.setMinimumSize(QSize(120, 0))
+        self.label.setMaximumSize(QSize(120, 16777215))
 
         self.horizontalLayout_3.addWidget(self.label)
 
-        self.destVideoEncoderBox = QComboBox(self.groupBox)
-        self.destVideoEncoderBox.setObjectName(u"destVideoEncoderBox")
+        self.videoEncoderBox = QComboBox(self.outputGroupBox)
+        self.videoEncoderBox.setObjectName(u"videoEncoderBox")
         sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         sizePolicy3.setHorizontalStretch(0)
         sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.destVideoEncoderBox.sizePolicy().hasHeightForWidth())
-        self.destVideoEncoderBox.setSizePolicy(sizePolicy3)
+        sizePolicy3.setHeightForWidth(self.videoEncoderBox.sizePolicy().hasHeightForWidth())
+        self.videoEncoderBox.setSizePolicy(sizePolicy3)
 
-        self.horizontalLayout_3.addWidget(self.destVideoEncoderBox)
+        self.horizontalLayout_3.addWidget(self.videoEncoderBox)
 
 
-        self.verticalLayout_5.addLayout(self.horizontalLayout_3)
+        self.gridLayout.addLayout(self.horizontalLayout_3, 1, 0, 1, 1)
 
         self.horizontalLayout_4 = QHBoxLayout()
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.label_2 = QLabel(self.groupBox)
+        self.label_2 = QLabel(self.outputGroupBox)
         self.label_2.setObjectName(u"label_2")
-        self.label_2.setMinimumSize(QSize(100, 0))
-        self.label_2.setMaximumSize(QSize(100, 16777215))
+        self.label_2.setMinimumSize(QSize(120, 0))
+        self.label_2.setMaximumSize(QSize(120, 16777215))
 
         self.horizontalLayout_4.addWidget(self.label_2)
 
-        self.destVideoBitrateBox = QComboBox(self.groupBox)
-        self.destVideoBitrateBox.setObjectName(u"destVideoBitrateBox")
-        sizePolicy3.setHeightForWidth(self.destVideoBitrateBox.sizePolicy().hasHeightForWidth())
-        self.destVideoBitrateBox.setSizePolicy(sizePolicy3)
+        self.videoBitRateBox = QComboBox(self.outputGroupBox)
+        self.videoBitRateBox.setObjectName(u"videoBitRateBox")
+        sizePolicy3.setHeightForWidth(self.videoBitRateBox.sizePolicy().hasHeightForWidth())
+        self.videoBitRateBox.setSizePolicy(sizePolicy3)
 
-        self.horizontalLayout_4.addWidget(self.destVideoBitrateBox)
+        self.horizontalLayout_4.addWidget(self.videoBitRateBox)
 
 
-        self.verticalLayout_5.addLayout(self.horizontalLayout_4)
+        self.gridLayout.addLayout(self.horizontalLayout_4, 1, 1, 1, 1)
 
         self.horizontalLayout_5 = QHBoxLayout()
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.label_4 = QLabel(self.groupBox)
+        self.label_4 = QLabel(self.outputGroupBox)
         self.label_4.setObjectName(u"label_4")
-        self.label_4.setMinimumSize(QSize(100, 0))
-        self.label_4.setMaximumSize(QSize(100, 16777215))
+        self.label_4.setMinimumSize(QSize(120, 0))
+        self.label_4.setMaximumSize(QSize(120, 16777215))
 
         self.horizontalLayout_5.addWidget(self.label_4)
 
-        self.destVideoFramerateBox = QComboBox(self.groupBox)
-        self.destVideoFramerateBox.setObjectName(u"destVideoFramerateBox")
-        sizePolicy3.setHeightForWidth(self.destVideoFramerateBox.sizePolicy().hasHeightForWidth())
-        self.destVideoFramerateBox.setSizePolicy(sizePolicy3)
+        self.videoFrameRateBox = QComboBox(self.outputGroupBox)
+        self.videoFrameRateBox.setObjectName(u"videoFrameRateBox")
+        sizePolicy3.setHeightForWidth(self.videoFrameRateBox.sizePolicy().hasHeightForWidth())
+        self.videoFrameRateBox.setSizePolicy(sizePolicy3)
 
-        self.horizontalLayout_5.addWidget(self.destVideoFramerateBox)
+        self.horizontalLayout_5.addWidget(self.videoFrameRateBox)
 
 
-        self.verticalLayout_5.addLayout(self.horizontalLayout_5)
+        self.gridLayout.addLayout(self.horizontalLayout_5, 2, 0, 1, 1)
 
         self.horizontalLayout_6 = QHBoxLayout()
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
-        self.label_5 = QLabel(self.groupBox)
+        self.label_5 = QLabel(self.outputGroupBox)
         self.label_5.setObjectName(u"label_5")
-        self.label_5.setMinimumSize(QSize(100, 0))
-        self.label_5.setMaximumSize(QSize(100, 16777215))
+        self.label_5.setMinimumSize(QSize(120, 0))
+        self.label_5.setMaximumSize(QSize(120, 16777215))
 
         self.horizontalLayout_6.addWidget(self.label_5)
 
-        self.destVideoWidthBox = QLineEdit(self.groupBox)
-        self.destVideoWidthBox.setObjectName(u"destVideoWidthBox")
+        self.videoSizeBox = QComboBox(self.outputGroupBox)
+        self.videoSizeBox.setObjectName(u"videoSizeBox")
 
-        self.horizontalLayout_6.addWidget(self.destVideoWidthBox)
-
-        self.destVideoHeightBox = QLineEdit(self.groupBox)
-        self.destVideoHeightBox.setObjectName(u"destVideoHeightBox")
-
-        self.horizontalLayout_6.addWidget(self.destVideoHeightBox)
+        self.horizontalLayout_6.addWidget(self.videoSizeBox)
 
 
-        self.verticalLayout_5.addLayout(self.horizontalLayout_6)
+        self.gridLayout.addLayout(self.horizontalLayout_6, 2, 1, 1, 1)
 
         self.horizontalLayout_7 = QHBoxLayout()
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.label_7 = QLabel(self.groupBox)
+        self.label_7 = QLabel(self.outputGroupBox)
         self.label_7.setObjectName(u"label_7")
-        self.label_7.setMinimumSize(QSize(100, 0))
-        self.label_7.setMaximumSize(QSize(100, 16777215))
+        self.label_7.setMinimumSize(QSize(120, 0))
+        self.label_7.setMaximumSize(QSize(120, 16777215))
 
         self.horizontalLayout_7.addWidget(self.label_7)
 
-        self.destAudioEncoderBox = QComboBox(self.groupBox)
-        self.destAudioEncoderBox.setObjectName(u"destAudioEncoderBox")
-        sizePolicy3.setHeightForWidth(self.destAudioEncoderBox.sizePolicy().hasHeightForWidth())
-        self.destAudioEncoderBox.setSizePolicy(sizePolicy3)
+        self.audioEncoderBox = QComboBox(self.outputGroupBox)
+        self.audioEncoderBox.setObjectName(u"audioEncoderBox")
+        sizePolicy3.setHeightForWidth(self.audioEncoderBox.sizePolicy().hasHeightForWidth())
+        self.audioEncoderBox.setSizePolicy(sizePolicy3)
 
-        self.horizontalLayout_7.addWidget(self.destAudioEncoderBox)
+        self.horizontalLayout_7.addWidget(self.audioEncoderBox)
 
 
-        self.verticalLayout_5.addLayout(self.horizontalLayout_7)
+        self.gridLayout.addLayout(self.horizontalLayout_7, 3, 0, 1, 1)
 
         self.horizontalLayout_8 = QHBoxLayout()
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
-        self.label_8 = QLabel(self.groupBox)
+        self.label_8 = QLabel(self.outputGroupBox)
         self.label_8.setObjectName(u"label_8")
-        self.label_8.setMinimumSize(QSize(100, 0))
-        self.label_8.setMaximumSize(QSize(100, 16777215))
+        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy4.setHorizontalStretch(0)
+        sizePolicy4.setVerticalStretch(0)
+        sizePolicy4.setHeightForWidth(self.label_8.sizePolicy().hasHeightForWidth())
+        self.label_8.setSizePolicy(sizePolicy4)
+        self.label_8.setMinimumSize(QSize(120, 0))
+        self.label_8.setMaximumSize(QSize(120, 16777215))
 
         self.horizontalLayout_8.addWidget(self.label_8)
 
-        self.destAudioBitrateBox = QComboBox(self.groupBox)
-        self.destAudioBitrateBox.setObjectName(u"destAudioBitrateBox")
-        sizePolicy3.setHeightForWidth(self.destAudioBitrateBox.sizePolicy().hasHeightForWidth())
-        self.destAudioBitrateBox.setSizePolicy(sizePolicy3)
+        self.audioBitRateBox = QComboBox(self.outputGroupBox)
+        self.audioBitRateBox.setObjectName(u"audioBitRateBox")
+        sizePolicy3.setHeightForWidth(self.audioBitRateBox.sizePolicy().hasHeightForWidth())
+        self.audioBitRateBox.setSizePolicy(sizePolicy3)
 
-        self.horizontalLayout_8.addWidget(self.destAudioBitrateBox)
-
-
-        self.verticalLayout_5.addLayout(self.horizontalLayout_8)
-
-        self.horizontalLayout_9 = QHBoxLayout()
-        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
-        self.label_9 = QLabel(self.groupBox)
-        self.label_9.setObjectName(u"label_9")
-        self.label_9.setMinimumSize(QSize(100, 0))
-        self.label_9.setMaximumSize(QSize(100, 16777215))
-
-        self.horizontalLayout_9.addWidget(self.label_9)
-
-        self.destConvertThreadsBox = QSpinBox(self.groupBox)
-        self.destConvertThreadsBox.setObjectName(u"destConvertThreadsBox")
-        self.destConvertThreadsBox.setAlignment(Qt.AlignCenter)
-        self.destConvertThreadsBox.setMinimum(1)
-        self.destConvertThreadsBox.setMaximum(10)
-        self.destConvertThreadsBox.setValue(8)
-
-        self.horizontalLayout_9.addWidget(self.destConvertThreadsBox)
+        self.horizontalLayout_8.addWidget(self.audioBitRateBox)
 
 
-        self.verticalLayout_5.addLayout(self.horizontalLayout_9)
+        self.gridLayout.addLayout(self.horizontalLayout_8, 3, 1, 1, 1)
 
 
-        self.horizontalLayout_18.addWidget(self.groupBox)
-
-
-        self.verticalLayout_2.addLayout(self.horizontalLayout_18)
+        self.verticalLayout_2.addWidget(self.outputGroupBox)
 
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_2.addItem(self.verticalSpacer)
-
-        self.horizontalLayout_20 = QHBoxLayout()
-        self.horizontalLayout_20.setSpacing(15)
-        self.horizontalLayout_20.setObjectName(u"horizontalLayout_20")
-        self.progressLabel_2 = QLabel(self.centralwidget)
-        self.progressLabel_2.setObjectName(u"progressLabel_2")
-
-        self.horizontalLayout_20.addWidget(self.progressLabel_2)
-
-        self.progressLabel = QLabel(self.centralwidget)
-        self.progressLabel.setObjectName(u"progressLabel")
-
-        self.horizontalLayout_20.addWidget(self.progressLabel)
-
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_20.addItem(self.horizontalSpacer_2)
-
-        self.label_10 = QLabel(self.centralwidget)
-        self.label_10.setObjectName(u"label_10")
-
-        self.horizontalLayout_20.addWidget(self.label_10)
-
-        self.leftTimeLabel = QLabel(self.centralwidget)
-        self.leftTimeLabel.setObjectName(u"leftTimeLabel")
-        self.leftTimeLabel.setAlignment(Qt.AlignCenter)
-
-        self.horizontalLayout_20.addWidget(self.leftTimeLabel)
-
-
-        self.verticalLayout_2.addLayout(self.horizontalLayout_20)
 
         self.progressBar = QProgressBar(self.centralwidget)
         self.progressBar.setObjectName(u"progressBar")
@@ -474,10 +286,11 @@ class Ui_MainWindow(object):
         self.progressBar.setMaximumSize(QSize(16777215, 12))
         self.progressBar.setMaximum(100)
         self.progressBar.setValue(0)
-        self.progressBar.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
-        self.progressBar.setOrientation(Qt.Horizontal)
+        self.progressBar.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
+        self.progressBar.setTextVisible(False)
+        self.progressBar.setOrientation(Qt.Orientation.Horizontal)
         self.progressBar.setInvertedAppearance(False)
-        self.progressBar.setTextDirection(QProgressBar.BottomToTop)
+        self.progressBar.setTextDirection(QProgressBar.Direction.BottomToTop)
 
         self.verticalLayout_2.addWidget(self.progressBar)
 
@@ -486,13 +299,10 @@ class Ui_MainWindow(object):
         self.horizontalLayout_11.setContentsMargins(4, 4, 4, 4)
         self.infoLabel = QLabel(self.centralwidget)
         self.infoLabel.setObjectName(u"infoLabel")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        sizePolicy4.setHorizontalStretch(0)
-        sizePolicy4.setVerticalStretch(0)
-        sizePolicy4.setHeightForWidth(self.infoLabel.sizePolicy().hasHeightForWidth())
-        self.infoLabel.setSizePolicy(sizePolicy4)
-        self.infoLabel.setFrameShape(QFrame.NoFrame)
-        self.infoLabel.setFrameShadow(QFrame.Sunken)
+        sizePolicy2.setHeightForWidth(self.infoLabel.sizePolicy().hasHeightForWidth())
+        self.infoLabel.setSizePolicy(sizePolicy2)
+        self.infoLabel.setFrameShape(QFrame.Shape.NoFrame)
+        self.infoLabel.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.horizontalLayout_11.addWidget(self.infoLabel)
 
@@ -513,52 +323,36 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
-        self.exitButton.pressed.connect(MainWindow.close)
-        self.srcFileButton.pressed.connect(MainWindow.onSrcFileButtonPressed)
-        self.destFileButton.pressed.connect(MainWindow.onDestFileButtonPressed)
-        self.convertButton.pressed.connect(MainWindow.onConvertButtonPressed)
+        self.exitButton.clicked.connect(MainWindow.close)
+        self.inputFileButton.clicked.connect(MainWindow.onInputFileButtonClicked)
+        self.outputFileButton.clicked.connect(MainWindow.onOutputFileButtonClicked)
         self.convertButton.clicked.connect(MainWindow.onConvertButtonClicked)
+        self.detailButton.clicked.connect(MainWindow.onDetailButtonClicked)
+        self.inputFileTreeWidget.itemChanged.connect(MainWindow.onInputTreeItemChanged)
+        self.sortButton.clicked.connect(MainWindow.onSortButtonClicked)
 
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Video Convertor 1.0 by Kenny Copyright@2025", None))
-        self.sourceFileLabel.setText(QCoreApplication.translate("MainWindow", u"Source File:", None))
-        self.srcFileButton.setText(QCoreApplication.translate("MainWindow", u"...", None))
-        self.destinationFileLabel.setText(QCoreApplication.translate("MainWindow", u"Destination File:", None))
-        self.destFileButton.setText(QCoreApplication.translate("MainWindow", u"...", None))
-        self.groupBox_2.setTitle(QCoreApplication.translate("MainWindow", u"Source Parameters:", None))
-        self.sourceDurationLabel.setText(QCoreApplication.translate("MainWindow", u"Duration:", None))
-        self.sourceVideoEncoderLabel.setText(QCoreApplication.translate("MainWindow", u"Video Encoder:", None))
-        self.sourceVideoEncoderBox.setPlaceholderText("")
-        self.sourceVideoBitrateLabel.setText(QCoreApplication.translate("MainWindow", u"Video BitRate:", None))
-        self.sourceVideoBitrateBox.setPlaceholderText("")
-        self.sourceVideoFrameLabel.setText(QCoreApplication.translate("MainWindow", u"Video FrameRate:", None))
-        self.sourceVideoFramerateBox.setPlaceholderText("")
-        self.sourceVideoSizeLabel.setText(QCoreApplication.translate("MainWindow", u"Video Size:", None))
-        self.sourceAudioEncoderLabel.setText(QCoreApplication.translate("MainWindow", u"Audio Encoder:", None))
-        self.sourceAudioEncoderBox.setPlaceholderText("")
-        self.sourceAudioBitstreamsLabel.setText(QCoreApplication.translate("MainWindow", u"Audio BitRate:", None))
-        self.sourceAudioBitrateBox.setPlaceholderText("")
-        self.sourceAudioSampleLabel.setText(QCoreApplication.translate("MainWindow", u"Audio Sample:", None))
-        self.sourceAudioSampleBox.setPlaceholderText("")
-        self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Destination Parameters:", None))
+        self.inputGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Source", None))
+        self.sourceFileLabel.setText(QCoreApplication.translate("MainWindow", u"Input File:", None))
+        self.inputFileButton.setText(QCoreApplication.translate("MainWindow", u"...", None))
+        self.detailButton.setText(QCoreApplication.translate("MainWindow", u"Detail...", None))
+        self.streamLabel.setText("")
+        self.sortButton.setText(QCoreApplication.translate("MainWindow", u"Sort...", None))
+        self.outputGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Destination", None))
+        self.destinationFileLabel.setText(QCoreApplication.translate("MainWindow", u"Output File:", None))
+        self.outputFileButton.setText(QCoreApplication.translate("MainWindow", u"...", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Video Encoder:", None))
-        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Video BitRate:", None))
-        self.label_4.setText(QCoreApplication.translate("MainWindow", u"Video FrameRate:", None))
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Video Bit Rate:", None))
+        self.label_4.setText(QCoreApplication.translate("MainWindow", u"Video Frame Rate:", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"Video Size:", None))
-        self.destVideoWidthBox.setText(QCoreApplication.translate("MainWindow", u"640", None))
-        self.destVideoHeightBox.setText(QCoreApplication.translate("MainWindow", u"480", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"Audio Encoder:", None))
-        self.label_8.setText(QCoreApplication.translate("MainWindow", u"Audio BitRate:", None))
-        self.label_9.setText(QCoreApplication.translate("MainWindow", u"Threads:", None))
-        self.progressLabel_2.setText(QCoreApplication.translate("MainWindow", u"Duration progress:", None))
-        self.progressLabel.setText(QCoreApplication.translate("MainWindow", u"00:00:00 / 00:00:00", None))
-        self.label_10.setText(QCoreApplication.translate("MainWindow", u"Left Time:", None))
-        self.leftTimeLabel.setText(QCoreApplication.translate("MainWindow", u"00:00:00", None))
+        self.label_8.setText(QCoreApplication.translate("MainWindow", u"Audio Bit Rate:", None))
         self.progressBar.setFormat(QCoreApplication.translate("MainWindow", u"%p%", None))
-        self.infoLabel.setText(QCoreApplication.translate("MainWindow", u"select source file and click \"Convert\" button to execute.", None))
+        self.infoLabel.setText("")
         self.convertButton.setText(QCoreApplication.translate("MainWindow", u"Convert", None))
         self.exitButton.setText(QCoreApplication.translate("MainWindow", u"Exit", None))
     # retranslateUi

@@ -1,42 +1,352 @@
 # -*- coding: utf-8 -*-
 
 import os
+# from tkinter import NO
 import ffmpeg
 import func
-import subprocess
-import time
-import io
+import re
 import json
 
-from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog
-from PySide6.QtCore import QThread,Signal,Slot
-from datetime import datetime
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QTreeWidgetItem, QTreeWidget, QHeaderView, QDialog
+from PySide6.QtCore import QThread, Signal, Qt
+from datetime import datetime, timedelta
 from ui.MainWindow_ui import Ui_MainWindow
+from FileInfoDialog import FileInfoDialog
+from StreamSortDialog import StreamSortDialog
 
 # -------------------------------------------------------------------
+# 主窗口类
+
+
+class MainWindow(QMainWindow, Ui_MainWindow):
+    def __init__(self):
+        super(MainWindow, self).__init__()
+        self.setupUi(self)
+
+        self.file_probe_info = None
+        self.selected_streams = []
+
+        self.convert_lastest_timestamp = 0.0
+
+        self.inputFileTreeWidget.setEditTriggers(
+            QTreeWidget.NoEditTriggers)
+        self.inputFileTreeWidget.setSelectionMode(
+            QTreeWidget.SingleSelection)
+        self.inputFileTreeWidget.setIndentation(10)
+        self.inputFileTreeWidget.setStyleSheet("""
+            QTreeWidget {
+                padding: 5px;
+            }
+            QTreeWidget::item {
+                padding: 5px;
+            }
+        """)
+        self.inputFileTreeWidget.header().setStretchLastSection(False)
+        self.inputFileTreeWidget.header().setSectionResizeMode(QHeaderView.ResizeToContents)
+
+        self.videoEncoderBox.insertItem(
+            0, "H264 (hardware)", userData="h264_amf")
+        self.videoEncoderBox.insertItem(
+            1, "H264 (software)", userData="libx264")
+        self.videoEncoderBox.insertItem(
+            2, "H265 (hardware)", userData="hevc_amf")
+        self.videoEncoderBox.insertItem(
+            3, "H265 (software)", userData="libx265")
+        self.videoEncoderBox.insertItem(4, "VP8", userData="libvpx")
+        self.videoEncoderBox.insertItem(5, "VP9", userData="libvpx-vp9")
+        self.videoEncoderBox.insertItem(6, "WebP", userData="libwebp")
+        self.videoEncoderBox.setCurrentIndex(0)
+
+        self.videoBitRateBox.insertItem(0, "300k", userData="300k")
+        self.videoBitRateBox.insertItem(1, "500k", userData="500k")
+        self.videoBitRateBox.insertItem(2, "750k", userData="750k")
+        self.videoBitRateBox.insertItem(3, "1m", userData="1000k")
+        self.videoBitRateBox.insertItem(4, "1.5m", userData="1500k")
+        self.videoBitRateBox.insertItem(5, "2m", userData="2000k")
+        self.videoBitRateBox.setCurrentIndex(1)
+
+        self.videoFrameRateBox.insertItem(0, '10', userData="10")
+        self.videoFrameRateBox.insertItem(1, '15', userData="15")
+        self.videoFrameRateBox.insertItem(2, '20', userData="20")
+        self.videoFrameRateBox.insertItem(3, '24', userData="24")
+        self.videoFrameRateBox.insertItem(4, '30', userData="30")
+        self.videoFrameRateBox.insertItem(5, '60', userData="60")
+        self.videoFrameRateBox.setCurrentIndex(2)
+
+        self.videoSizeBox.insertItem(0, '480*270', userData="480")
+        self.videoSizeBox.insertItem(1, '640*360', userData="640")
+        self.videoSizeBox.insertItem(2, '1024*576', userData="1024")
+        self.videoSizeBox.insertItem(3, '1280*720', userData="1280")
+        self.videoSizeBox.insertItem(4, '1920*1080', userData="1920")
+        self.videoSizeBox.setCurrentIndex(3)
+
+        self.audioEncoderBox.insertItem(0, "AAC", userData="aac")
+        self.audioEncoderBox.insertItem(1, "MP3", userData="libmp3lame")
+        self.audioEncoderBox.insertItem(1, "Opus", userData="opus")
+        self.audioEncoderBox.insertItem(2, "Vorbis", userData="libvorbis")
+        self.audioEncoderBox.setCurrentIndex(0)
+
+        self.audioBitRateBox.insertItem(0, "24k", userData="24k")
+        self.audioBitRateBox.insertItem(1, "48k", userData="48k")
+        self.audioBitRateBox.insertItem(2, "64k", userData="64k")
+        self.audioBitRateBox.insertItem(3, "128k", userData="128k")
+        self.audioBitRateBox.insertItem(4, "256k", userData="256k")
+        self.audioBitRateBox.setCurrentIndex(1)
+
+        self.setControlsEnabled(True)
+
+        # 创建线程
+        self.probe_thread = ProbeThread()
+        self.probe_thread.finished_event.connect(self.handleProbeFinishedEvent)
+
+        self.convert_thread = ConvertThread()
+        self.convert_thread.finished_event.connect(
+            self.handleConvertFinishedEvent)
+        self.convert_thread.progress_event.connect(
+            self.handleConvertProgressEvent)
+
+    # 窗口关闭事件
+    def closeEvent(self, event):
+        if QMessageBox.question(self, "Tips", "Are you sure to exit this programs?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No) == QMessageBox.Yes:
+
+            # 停止线程
+            if self.probe_thread.running:
+                self.probe_thread.stop()
+                self.probe_thread = None
+
+            if self.convert_thread.running:
+                self.convert_thread.stop()
+                self.convert_thread = None
+
+            event.accept()
+        else:
+            event.ignore()
+
+    # 选择源文件
+    def onInputFileButtonClicked(self):
+        dialog = QFileDialog(self)
+        dialog.setFileMode(QFileDialog.ExistingFile)
+
+        file_name, _ = dialog.getOpenFileName(
+            self, "Open", "", "Video Files (*.avi *.mkv *.mp4 *.mov *.flv *.wmv)")
+        if not file_name:
+            return
+
+        self.inputFileBox.setText(file_name)
+        out_file_base_name, dest_file_ext_name = os.path.splitext(file_name)
+        out_file_name = out_file_base_name+"_NEW"+dest_file_ext_name
+        self.outputFileBox.setText(out_file_name)
+
+        # 创建并启动探测线程
+
+        self.probe_thread.setParams(file_name)
+        self.probe_thread.start()
+
+    def onDetailButtonClicked(self):
+        if self.file_probe_info:
+            dialog = FileInfoDialog(self)
+            dialog.setFileInfo(self.file_probe_info)
+            dialog.exec()
+
+    # 选择目标文件
+    def onOutputFileButtonClicked(self):
+        dialog = QFileDialog(self)
+        dialog.setFileMode(QFileDialog.AnyFile)
+        dialog.setDefaultSuffix(".mp4")
+        filename, _ = dialog.getSaveFileName(
+            self, "Save as", "", "All Files (*);;MPEG-4 (*.mp4);;AVI(*.avi);;MKV(*.mkv);;WMV(*.wmv)")
+
+        if filename:
+            self.outputFileBox.setText(filename)
+
+    # 开始转换文件
+    def onConvertButtonClicked(self):
+        if self.convert_thread.running is False:
+            input_file = self.inputFileBox.text()
+            output_file = self.outputFileBox.text()
+
+            if func.is_empty_string(input_file) or func.is_empty_string(output_file):
+                self.infoLabel.setText(
+                    'Pleast select a source file and a destination file.')
+                return
+
+            convert_params = {"input_file": input_file,
+                              "output_file": output_file,
+                              "selected_streams": self.selected_streams,
+                              "video_encoder": self.videoEncoderBox.currentData(),
+                              "video_bitrate": self.videoBitRateBox.currentData(),
+                              "video_framerate": self.videoFrameRateBox.currentData(),
+                              "video_size": self.videoSizeBox.currentData(),
+                              "audio_encoder": self.audioEncoderBox.currentData(),
+                              "audio_bitrate": self.audioBitRateBox.currentData()}
+            self.convert_thread.setParams(convert_params)
+            self.convert_lastest_timestamp = datetime.now().timestamp()
+            self.convert_thread.start()
+            self.setControlsEnabled(False)
+            self.infoLabel.setText("Converting...")
+        else:
+            self.convert_thread.stop()
+            self.setControlsEnabled(True)
+            self.infoLabel.setText("Converting stopped!")
+
+    def onSortButtonClicked(self):
+        dialog = StreamSortDialog(self)
+        dialog.setStreamList(self.selected_streams)
+        ret = dialog.exec()
+        if ret == QDialog.Accepted:
+            self.selected_streams = dialog.getStreamList()
+            self.streamLabel.setText(f"Selected Streams: {self.selected_streams}")
+
+    # 设置控件输入框显示状态
+    def setControlsEnabled(self, status):
+
+        if status is True:
+            self.convertButton.setText('Convert')
+        else:
+            self.convertButton.setText('Stop')
+
+        self.inputGroupBox.setEnabled(status)
+        self.outputGroupBox.setEnabled(status)
+        self.progressBar.setValue(0)
+
+    def showStreamInfo(self):
+
+        self.selected_streams = []
+
+        root_video_item = self.inputFileTreeWidget.topLevelItem(0)
+        for index in range(root_video_item.childCount()):
+            item = root_video_item.child(index)
+            if item.checkState(0) == Qt.CheckState.Checked:
+                self.selected_streams.append(f"v:{index}")
+
+        root_audio_item = self.inputFileTreeWidget.topLevelItem(1)
+        for index in range(root_audio_item.childCount()):
+            item = root_audio_item.child(index)
+            if item.checkState(0) == Qt.CheckState.Checked:
+                self.selected_streams.append(f"a:{index}")
+
+        self.streamLabel.setText("Selected Streams:")
+        self.streamLabel.setText(
+            self.streamLabel.text() + f"{self.selected_streams}")
+
+    def onInputTreeItemChanged(self, item, column):
+        if item.parent() is None:
+            return
+        self.showStreamInfo()
+
+    def handleProbeFinishedEvent(self, data):
+        if data is None:
+            self.infoLabel.setText("not found video information")
+            return
+
+        self.file_probe_info = json.dumps(data, indent=4, ensure_ascii=False)
+
+        self.inputFileTreeWidget.clear()
+        root_video_item = QTreeWidgetItem()
+        root_video_item.setText(0, "Video Streams")
+        self.inputFileTreeWidget.insertTopLevelItem(0, root_video_item)
+
+        root_audio_item = QTreeWidgetItem()
+        root_audio_item.setText(0, "Audio Streams")
+        self.inputFileTreeWidget.insertTopLevelItem(1, root_audio_item)
+
+        streams = data['streams']
+        video_streams = [
+            stream for stream in streams if stream['codec_type'] == 'video']
+        audio_streams = [
+            stream for stream in streams if stream['codec_type'] == 'audio']
+
+        # print(f"video_streams count={len(video_streams)}")
+        # print(f"audio_streams count={len(audio_streams)}")
+
+        for index, stream in enumerate(video_streams):
+            codec_name = stream.get('codec_name', '')
+            codec_long_name = stream.get('codec_long_name', '')
+            width = stream.get('width', 0)
+            height = stream.get('height', 0)
+            frame_rate = stream.get('r_frame_rate', '')
+            bit_rate = stream.get('bit_rate', 0)
+
+            item = QTreeWidgetItem()
+            item.setText(
+                0, f"Video Stream: [v:{index}] [Codec:{codec_name} | {codec_long_name}] [Size:{width}x{height}] [Fps:{frame_rate}] [Bitrate:{bit_rate}]")
+            item.setCheckState(
+                0, Qt.CheckState.Checked if index == 0 else Qt.CheckState.Unchecked)
+            self.inputFileTreeWidget.topLevelItem(0).addChild(item)
+
+        for index, stream in enumerate(audio_streams):
+            codec_name = stream.get('codec_name', '')
+            codec_long_name = stream.get('codec_long_name', '')
+            bit_rate = stream.get('bit_rate', 0)
+            language = stream.get('tags', {}).get('language', '')
+
+            item = QTreeWidgetItem()
+            item.setText(
+                0, f"Audio Stream: [a:{index}] [Codec:{codec_name} | {codec_long_name}] [Bitrate:{bit_rate}] [Language:{language}]")
+            item.setCheckState(
+                0, Qt.CheckState.Checked if index == 0 else Qt.CheckState.Unchecked)
+            self.inputFileTreeWidget.topLevelItem(1).addChild(item)
+
+        self.inputFileTreeWidget.expandAll()
+        self.showStreamInfo()
+
+    # 转换进程事件
+    def handleConvertProgressEvent(self, progress):
+        self.progressBar.setValue(int(progress))
+
+        timestamp_diff = datetime.now().timestamp() - self.convert_lastest_timestamp
+
+        if timestamp_diff <= 0.00:
+            timestamp_diff = 0.001
+        if progress <= 0.00:
+            progress = 0.0001
+
+        speed = progress / timestamp_diff
+        left_seconds = (100.00 - progress) / speed
+
+        left_time = func.seconds_to_time(left_seconds)
+        self.infoLabel.setText(
+            f"Progress: {progress:.2f}%, Left: {left_time}")
+
+    def handleConvertFinishedEvent(self):
+        self.setControlsEnabled(True)
+# -------------------------------------------------------------------
 # 创建一个新的线程类
+
+
 class ProbeThread(QThread):
     # 定义一个信号，用于在探测完成时发送结果
-    probeFinished = Signal(dict)
+    finished_event = Signal(object)
 
-    def __init__(self, fileName):
+    def __init__(self):
         super().__init__()
-        self.fileName = fileName
+        self.running = False
+
+    def setParams(self, filename):
+        self.filename = filename
+
+    def stop(self):
+        self.running = False
 
     def run(self):
+        self.running = True
         try:
             # 在新线程中运行ffmpeg.probe
-            probe = ffmpeg.probe(self.fileName)
+            probe_result = ffmpeg.probe(self.filename)
             # 发送探测结果
-            self.probeFinished.emit(probe)
+            self.finished_event.emit(probe_result)
         except Exception as e:
             # 如果发生错误，发送错误信息
-            self.probeFinished.emit({"error": str(e)})
+            print(f"Exception: {e}")
+        finally:
+            self.running = False
 
 # -------------------------------------------------------------------
 # 转换线程类
+
+
 class ConvertThread(QThread):
-    finished_event = Signal(int)
+    finished_event = Signal()
     progress_event = Signal(float)
 
     def __init__(self):
@@ -45,336 +355,113 @@ class ConvertThread(QThread):
         self.process = None
         self.params = None
 
-    def setParams(self,params):
+    def setParams(self, params):
         self.params = params
         pass
+
+    # 停止
+    def stop(self):
+        self.running = False
+        if self.process is not None:
+            self.process.terminate()
+            self.process.wait()
+            self.process = None
+        self.wait()
 
     # 运行
     def run(self):
         if self.params is None:
             self.finished_event.emit(-1)
             return
-        
+
         self.running = True
-            
-        input_file = self.params['input_file']
-        output_file = self.params['output_file']
-        # duration = self.params['duration']
-        video_encoder = self.params['video_encoder']
-        video_bitrate = self.params['video_bitrate']
-        video_framerate = self.params['video_framerate']
-        video_size = self.params['video_width']+'x'+self.params['video_height']
-        audio_encoder = self.params['audio_encoder']
-        audio_bitrate = self.params['audio_bitrate']
-        threads = self.params['threads']
 
-        ffmpeg_command = ['ffmpeg','-i',input_file,'-r',video_framerate,'-c:v','libx264','-c:a','aac','-b:v',video_bitrate,'-s',video_size,'-b:a',audio_bitrate,'-threads',threads,'-preset','fast','-progress','pipe:1','-y',output_file]
+        try:
+            input_file = self.params['input_file']
+            output_file = self.params['output_file']
+            selected_streams = self.params['selected_streams']
+            video_encoder = self.params['video_encoder']
+            video_bitrate = self.params['video_bitrate']
+            video_framerate = self.params['video_framerate']
+            video_size = self.params['video_size']
+            audio_encoder = self.params['audio_encoder']
+            audio_bitrate = self.params['audio_bitrate']
 
-        # 使用Popen代替run，并设置stderr为STDOUT，以便可以获取FFmpeg的进度信息
-        self.process = subprocess.Popen(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-        std_output = io.TextIOWrapper(self.process.stdout.buffer, encoding='utf-8')
-        
-        # 实时读取输出信息
-        current_time=None
+            input_stream = ffmpeg.input(input_file)
 
-        while self.running:
-            poll = self.process.poll()
-            if poll is not None:
-                break
+            ready_stream = []
+            for item in selected_streams:
+                stream = input_stream[item]
+                if item.startswith("v:"):
+                    stream = stream.filter("scale", w=video_size, h=-1)
+                ready_stream.append(stream)
 
-            try:
-                output = std_output.readline()
-                if output is None:
+            output_stream = (
+                ffmpeg.output(
+                    *ready_stream,
+                    output_file,
+                    vcodec=video_encoder,
+                    video_bitrate=video_bitrate,
+                    r=video_framerate,
+                    acodec=audio_encoder,
+                    audio_bitrate=audio_bitrate,
+                )
+                .global_args("-progress", "pipe:2", "-threads", "8", "-preset", "fast")
+                .overwrite_output()
+            )
+            self.process = output_stream.run_async(
+                pipe_stdout=True, pipe_stderr=True)
+
+            duration_time = 0
+
+            # 使用正则表达式提取时间信息
+            duration_pattern = re.compile(r"Duration: (\d+:\d+:\d)")
+            time_pattern = re.compile(r"time=(\d+:\d+:\d)")
+
+            # 检查线程是否运行中
+            while self.running:
+                poll = self.process.poll()
+                if poll is not None:
+                    break
+
+                stderr_line = (
+                    self.process.stderr.readline()
+                    .decode("utf-8", errors="ignore")
+                    .strip()
+                )
+                if not stderr_line:
                     continue
-            except Exception as e:
-                print('Exception:',e)
-                continue
 
-            output=output.strip()
-            indexForTime = output.startswith('out_time=')
-            if indexForTime is False:
-                continue
-                
-            current_time_str=output[9:]
-            if current_time_str is None:
-                continue
+                # print(stderr_line)
 
-            # print('output:',output)
-            current_time = func.timestr_to_seconds(current_time_str)
-            if current_time > 0:
-                self.progress_event.emit(current_time)
+                if duration_time == 0:
+                    # 解析视频总时长
+                    duration_match = duration_pattern.search(stderr_line)
+                    if duration_match is not None:
+                        time_str = duration_match.group(1)
+                        h, m, s = map(float, time_str.split(":"))
+                        duration_time = h * 3600 + m * 60 + s
+                        # print(f"视频总时长: {duration_time} 秒")
+                else:
+                    time_match = time_pattern.search(stderr_line)
+                    if time_match and duration_time > 0:
+                        time_str = time_match.group(1)
+                        h, m, s = map(float, time_str.split(":"))
+                        current_time = h * 3600 + m * 60 + s
+                        # print(f"当前处理时间: {current_time} 秒")
+                        progress = (current_time / duration_time) * 100.0
+                        if 0 <= progress <= 100:
+                            # print(
+                            #     f"进度: {current_time:.2f} / {duration_time:.2f} = {progress:.2f}%"
+                            # )
+                            self.progress_event.emit(progress)
 
-            time.sleep(0.1)
-        
-        self.running = False
-        self.finished_event.emit(0)
-
-    # 停止
-    def stop(self):
-        if self.process is not None:
-            try:
+            self.finished_event.emit()
+        except Exception as e:
+            print(f"Exception: {e}")
+        finally:
+            # 确保进程被终止
+            if self.process:
                 self.process.terminate()
                 self.process.wait()
-            except Exception as e:
-                self.informationBox.appendPlainText(f"converting process terminate error: {e}")
-
-        self.running = False
-
-# -------------------------------------------------------------------
-# 主窗口类
-class MainWindow(QMainWindow, Ui_MainWindow):
-    def __init__(self):
-        super(MainWindow, self).__init__()
-        self.setupUi(self)
-
-        self.duration = None
-        self.convert_init_timestamp = 0
-
-        self.destVideoEncoderBox.insertItem(0,"mp4")
-        self.destVideoEncoderBox.insertItem(1,"avi")
-        self.destVideoEncoderBox.insertItem(2,"flv")
-        self.destVideoEncoderBox.insertItem(3,"mkv")
-        self.destVideoEncoderBox.insertItem(4,"mov")
-        self.destVideoEncoderBox.setCurrentIndex(0)
-        
-        self.destVideoBitrateBox.insertItem(0,"300k")
-        self.destVideoBitrateBox.insertItem(1,"400k")
-        self.destVideoBitrateBox.insertItem(2,"500k")
-        self.destVideoBitrateBox.insertItem(3,"700k")
-        self.destVideoBitrateBox.insertItem(4,"1m")
-        self.destVideoBitrateBox.insertItem(5,"1.5m")
-        self.destVideoBitrateBox.insertItem(6,"2m")
-        self.destVideoBitrateBox.setCurrentIndex(2)
-
-        self.destVideoFramerateBox.insertItem(0,'10')
-        self.destVideoFramerateBox.insertItem(1,'15')
-        self.destVideoFramerateBox.insertItem(2,'20')
-        self.destVideoFramerateBox.insertItem(3,'25')
-        self.destVideoFramerateBox.insertItem(4,'30')
-        self.destVideoFramerateBox.insertItem(5,'40')
-        self.destVideoFramerateBox.insertItem(6,'60')
-        self.destVideoFramerateBox.setCurrentIndex(2)
-
-        self.destAudioEncoderBox.insertItem(0,"mp3")
-        self.destAudioEncoderBox.insertItem(1,"aac")
-        self.destAudioEncoderBox.insertItem(2,"ogg")
-        self.destAudioEncoderBox.setCurrentIndex(1)
-
-        self.destAudioBitrateBox.insertItem(0,"24k")
-        self.destAudioBitrateBox.insertItem(1,"48k")
-        self.destAudioBitrateBox.insertItem(2,"64k")
-        self.destAudioBitrateBox.insertItem(3,"128k")
-        self.destAudioBitrateBox.insertItem(4,"256k")
-        self.destAudioBitrateBox.setCurrentIndex(1)
-
-        self.set_control_converting_status(False)
-
-        self.convertThread = ConvertThread()
-        self.convertThread.finished_event.connect(self.handleConvertFinishedEvent)
-        self.convertThread.progress_event.connect(self.handleConvertProgressEvent)
-
-    # 窗口关闭事件
-    def closeEvent(self, event):
-        if QMessageBox.question(self, "Tips", "Are you sure to exit this programs?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No) == QMessageBox.Yes:
-            
-            # 停止线程
-            if self.convertThread.running:
-                self.convertThread.stop()
-
-            event.accept()
-        else:
-            event.ignore()
-
-    # 选择源文件
-    def onSrcFileButtonPressed(self):
-        dialog = QFileDialog(self)
-        dialog.setFileMode(QFileDialog.ExistingFile)
-
-        fileName, _ = dialog.getOpenFileName(self, "Source Video File", "", "Video Files (*.avi *.mkv *.mp4 *.mov *.flv *.wmv)")
-        if not fileName:
-            return
-        
-        self.srcFileBox.setText(fileName)
-        destFileBaseName,destFileExtName=os.path.splitext(fileName)
-        destFileName=destFileBaseName+"(new)"+destFileExtName
-        self.destFileBox.setText(destFileName)
-
-        # 创建并启动探测线程
-        self.probeThread = ProbeThread(fileName)
-        self.probeThread.probeFinished.connect(self.handleProbeFinishedEvent)
-        self.probeThread.start()
-
-        # probe = ffmpeg.probe(fileName)
-        # video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
-        # audio_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'audio'), None)
-
-        # if video_stream is None:
-        #     self.infoLabel.setText("not found video information")
-        # else:
-        #     self.duration = video_stream.get('duration',0)
-        #     bitrate = video_stream.get('bit_rate',0)
-        #     profile = video_stream.get('profile','')
-
-        #     duration_str=func.seconds_to_time(self.duration)
-        #     bitrate_str = func.convert_bytes(bitrate)
-        #     self.sourceDurationBox.setText(duration_str)
-
-        #     self.sourceVideoEncoderBox.setText(video_stream["codec_name"]+" ("+profile+")")
-        #     self.sourceVideoBitrateBox.setText(bitrate_str)
-        #     self.sourceVideoFramerateBox.setText(video_stream["r_frame_rate"])
-        #     self.sourceVideoSizeBox.setText(str(video_stream["width"])+"*"+str(video_stream["height"]))
-
-        # if audio_stream is None:
-        #     self.infoLabel.setText("not found audio information")
-        # else:
-        #     bitrate = func.convert_bytes(audio_stream["bit_rate"])
-        #     samplerate = float(audio_stream["sample_rate"])
-        #     strSamplerate =  "%3.1f" % (samplerate / 1000.0) + "KHz"
-
-        #     self.sourceAudioEncoderBox.setText(audio_stream["codec_name"])
-        #     self.sourceAudioBitrateBox.setText(bitrate)
-        #     self.sourceAudioSampleBox.setText(strSamplerate)
-
-        # print(json.dumps(probe))
-
-    # 选择目标文件
-    def onDestFileButtonPressed(self):
-        dialog = QFileDialog(self)
-        dialog.setFileMode(QFileDialog.AnyFile)
-        dialog.setDefaultSuffix(".mp4")
-        fileName, _ = dialog.getSaveFileName(self, "Destination Video File", "", "All Files (*);;MPEG-4 (*.mp4);;AVI(*.avi);;MKV(*.mkv);;WMV(*.wmv)")
-
-        if fileName:
-            self.destFileBox.setText(fileName)
-
-    # 开始转换文件
-    def onConvertButtonPressed(self):
-
-        input_file = self.srcFileBox.text()
-        output_file = self.destFileBox.text()
-
-        if func.is_empty_string(input_file) or func.is_empty_string(output_file):
-            self.infoLabel.setText('Pleast select a source file and a destination file.')
-            return
-
-        if self.convertThread.running is False:
-            convertParams = {"input_file":input_file,
-                             "output_file":output_file,
-                            #  "duration":self.duration,
-                             "video_encoder":self.destVideoEncoderBox.currentText(),
-                             "video_bitrate":self.destVideoBitrateBox.currentText(),
-                             "video_framerate":self.destVideoFramerateBox.currentText(),
-                             "video_width":self.destVideoWidthBox.text(),
-                             "video_height":self.destVideoHeightBox.text(),
-                             "audio_encoder":self.destAudioEncoderBox.currentText(),
-                             "audio_bitrate":self.destAudioBitrateBox.currentText(),
-                             "threads":self.destConvertThreadsBox.text()}
-            self.convertThread.setParams(convertParams)
-            self.convert_init_timestamp = datetime.now()
-            self.convertThread.start()
-            self.set_control_converting_status(True)
-            self.infoLabel.setText("Converting...")
-        else:
-            self.convertThread.stop()
-            self.set_control_converting_status(False)
-            self.infoLabel.setText("Converting stopped!")
-
-
-    def onConvertButtonClicked(self):
-        pass
-    
-    # 设置控件输入框显示状态
-    def set_control_converting_status(self,status):
-
-        if status is True:
-            self.convertButton.setText('Stop')
-        else:
-            self.convertButton.setText('Convert')
-
-        self.srcFileBox.setEnabled(not status)
-        self.destFileBox.setEnabled(not status)
-        self.srcFileButton.setEnabled(not status)
-        self.destFileButton.setEnabled(not status)
-        self.destVideoEncoderBox.setEnabled(not status)
-        self.destVideoBitrateBox.setEnabled(not status)
-        self.destVideoFramerateBox.setEnabled(not status)
-        self.destVideoWidthBox.setEnabled(not status)
-        self.destVideoHeightBox.setEnabled(not status)
-        self.destAudioEncoderBox.setEnabled(not status)
-        self.destAudioBitrateBox.setEnabled(not status)
-        self.destConvertThreadsBox.setEnabled(not status)
-
-        self.progressLabel.setText('00:00:00 / 00:00:00')
-        self.leftTimeLabel.setText('00:00:00')
-        self.progressBar.setValue(0)
-        self.progressBar.setFormat('0%')
-
-    # 转换结束信号槽
-    @Slot(int)
-    def handleConvertFinishedEvent(self, errcode):
-        # print("errcode:",errcode)
-        self.infoLabel.setText("Converting finished!")
-        self.set_control_converting_status(False)
-
-    # 转换进程信号槽
-    @Slot(float)
-    def handleConvertProgressEvent(self, outtime):
-        # print("progress:",progress)
-        progress=float(outtime) / float(self.duration) * 100
-        progressValue = '%.2f'%progress
-        if progress > 100.00:
-            progressValue = 100
-        self.progressBar.setFormat(str(progressValue)+"%")
-        self.progressBar.setValue(int(progress))
-
-        progress_up = func.seconds_to_time(outtime)
-        progress_down = func.seconds_to_time(self.duration)
-        self.progressLabel.setText(progress_up + '/' + progress_down)
-
-        # 估算剩余时间
-        spend_time = datetime.now() - self.convert_init_timestamp
-        current_process = outtime
-        total_process = float(self.duration)
-
-        left_seconds = spend_time.total_seconds() * total_process / current_process - spend_time.total_seconds()
-
-        if left_seconds >= 0:
-            left_time_str = func.seconds_to_time(left_seconds)
-            self.leftTimeLabel.setText(left_time_str)
-
-    @Slot(dict)
-    def handleProbeFinishedEvent(self, probe):
-        if "error" in probe:
-            self.infoLabel.setText("Error: " + probe["error"])
-        else:
-            video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
-            audio_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'audio'), None)
-
-            if video_stream is None:
-                self.infoLabel.setText("not found video information")
-            else:
-                self.duration = video_stream.get('duration',0)
-                bitrate = video_stream.get('bit_rate',0)
-                profile = video_stream.get('profile','')
-
-                duration_str=func.seconds_to_time(self.duration)
-                bitrate_str = func.convert_bytes(bitrate)
-                self.sourceDurationBox.setText(duration_str)
-
-                self.sourceVideoEncoderBox.setText(video_stream.get('codec_name','')+" ("+profile+")")
-                self.sourceVideoBitrateBox.setText(bitrate_str)
-                self.sourceVideoFramerateBox.setText(video_stream.get('r_frame_rate',''))
-                self.sourceVideoSizeBox.setText(str(video_stream.get('width',0))+"*"+str(video_stream.get('height',0)))
-
-            if audio_stream is None:
-                self.infoLabel.setText("not found audio information")
-            else:
-                bitrate = func.convert_bytes(audio_stream.get('bit_rate',0))
-                samplerate = float(audio_stream.get('sample_rate',0))
-                strSamplerate =  "%3.1f" % (samplerate / 1000.0) + "KHz"
-
-                self.sourceAudioEncoderBox.setText(audio_stream.get('codec_name',''))
-                self.sourceAudioBitrateBox.setText(bitrate)
-                self.sourceAudioSampleBox.setText(strSamplerate)
-
-            print(json.dumps(probe))
+            self.running = False
