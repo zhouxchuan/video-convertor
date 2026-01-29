@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+# Stream sorting dialog
 
-from PySide6.QtWidgets import QDialog, QListWidget, QListWidgetItem
+from PySide6.QtWidgets import QDialog, QListWidgetItem
 from PySide6.QtCore import Qt
 from ui.StreamSortDialog_ui import Ui_Dialog
 

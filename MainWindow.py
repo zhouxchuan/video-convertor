@@ -14,11 +14,12 @@ from ui.MainWindow_ui import Ui_MainWindow
 from FileInfoDialog import FileInfoDialog
 from StreamSortDialog import StreamSortDialog
 
-# -------------------------------------------------------------------
-# 主窗口类
-
 
 class MainWindow(QMainWindow, Ui_MainWindow):
+    '''
+    MainWindow类
+    '''
+
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
@@ -28,10 +29,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.convert_lastest_timestamp = 0.0
 
-        self.inputFileTreeWidget.setEditTriggers(
-            QTreeWidget.NoEditTriggers)
-        self.inputFileTreeWidget.setSelectionMode(
-            QTreeWidget.SingleSelection)
+        self.inputFileTreeWidget.setEditTriggers(QTreeWidget.NoEditTriggers)
+        self.inputFileTreeWidget.setSelectionMode(QTreeWidget.SingleSelection)
         self.inputFileTreeWidget.setIndentation(10)
         self.inputFileTreeWidget.setStyleSheet("""
             QTreeWidget {
@@ -44,14 +43,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.inputFileTreeWidget.header().setStretchLastSection(False)
         self.inputFileTreeWidget.header().setSectionResizeMode(QHeaderView.ResizeToContents)
 
-        self.videoEncoderBox.insertItem(
-            0, "H264 (hardware)", userData="h264_amf")
-        self.videoEncoderBox.insertItem(
-            1, "H264 (software)", userData="libx264")
-        self.videoEncoderBox.insertItem(
-            2, "H265 (hardware)", userData="hevc_amf")
-        self.videoEncoderBox.insertItem(
-            3, "H265 (software)", userData="libx265")
+        self.videoEncoderBox.insertItem(0, "H264 (hardware)", userData="h264_amf")
+        self.videoEncoderBox.insertItem(1, "H264 (software)", userData="libx264")
+        self.videoEncoderBox.insertItem(2, "H265 (hardware)", userData="hevc_amf")
+        self.videoEncoderBox.insertItem(3, "H265 (software)", userData="libx265")
         self.videoEncoderBox.insertItem(4, "VP8", userData="libvpx")
         self.videoEncoderBox.insertItem(5, "VP9", userData="libvpx-vp9")
         self.videoEncoderBox.insertItem(6, "WebP", userData="libwebp")
@@ -100,13 +95,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.probe_thread.finished_event.connect(self.handleProbeFinishedEvent)
 
         self.convert_thread = ConvertThread()
-        self.convert_thread.finished_event.connect(
-            self.handleConvertFinishedEvent)
-        self.convert_thread.progress_event.connect(
-            self.handleConvertProgressEvent)
+        self.convert_thread.finished_event.connect(self.handleConvertFinishedEvent)
+        self.convert_thread.progress_event.connect(self.handleConvertProgressEvent)
 
-    # 窗口关闭事件
     def closeEvent(self, event):
+        '''
+        the close event of MainWIndow
+        :param event: close event.
+        '''
         if QMessageBox.question(self, "Tips", "Are you sure to exit this programs?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No) == QMessageBox.Yes:
 
             # 停止线程
@@ -122,13 +118,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             event.ignore()
 
-    # 选择源文件
     def onInputFileButtonClicked(self):
+        '''
+        Select a source video file.
+        '''
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
 
-        file_name, _ = dialog.getOpenFileName(
-            self, "Open", "", "Video Files (*.avi *.mkv *.mp4 *.mov *.flv *.wmv)")
+        file_name, _ = dialog.getOpenFileName(self, "Open", "", "Video Files (*.avi *.mkv *.mp4 *.mov *.flv *.wmv)")
         if not file_name:
             return
 
@@ -138,36 +135,40 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.outputFileBox.setText(out_file_name)
 
         # 创建并启动探测线程
-
         self.probe_thread.setParams(file_name)
         self.probe_thread.start()
 
     def onDetailButtonClicked(self):
+        '''
+        Show the probing information of the video file.
+        '''
         if self.file_probe_info:
             dialog = FileInfoDialog(self)
             dialog.setFileInfo(self.file_probe_info)
             dialog.exec()
 
-    # 选择目标文件
     def onOutputFileButtonClicked(self):
+        '''
+        Select a destination file for saving.
+        '''
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.AnyFile)
         dialog.setDefaultSuffix(".mp4")
-        filename, _ = dialog.getSaveFileName(
-            self, "Save as", "", "All Files (*);;MPEG-4 (*.mp4);;AVI(*.avi);;MKV(*.mkv);;WMV(*.wmv)")
+        filename, _ = dialog.getSaveFileName(self, "Save as", "", "All Files (*);;MPEG-4 (*.mp4);;AVI(*.avi);;MKV(*.mkv);;WMV(*.wmv)")
 
         if filename:
             self.outputFileBox.setText(filename)
 
-    # 开始转换文件
     def onConvertButtonClicked(self):
+        '''
+        Starting to convert.
+        '''
         if self.convert_thread.running is False:
             input_file = self.inputFileBox.text()
             output_file = self.outputFileBox.text()
 
             if func.is_empty_string(input_file) or func.is_empty_string(output_file):
-                self.infoLabel.setText(
-                    'Pleast select a source file and a destination file.')
+                self.infoLabel.setText('Pleast select a source file and a destination file.')
                 return
 
             convert_params = {"input_file": input_file,
@@ -190,6 +191,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.infoLabel.setText("Converting stopped!")
 
     def onSortButtonClicked(self):
+        '''
+        Sorting the streams
+        '''
         dialog = StreamSortDialog(self)
         dialog.setStreamList(self.selected_streams)
         ret = dialog.exec()
@@ -197,9 +201,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.selected_streams = dialog.getStreamList()
             self.streamLabel.setText(f"Selected Streams: {self.selected_streams}")
 
-    # 设置控件输入框显示状态
     def setControlsEnabled(self, status):
-
+        '''
+        Set the controls while converting
+        :param status: True - All controls is enabled, False - All controls is not enabled.
+        '''
         if status is True:
             self.convertButton.setText('Convert')
         else:
@@ -210,7 +216,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.progressBar.setValue(0)
 
     def showStreamInfo(self):
-
+        '''
+        Show the selected streams while check the TreeWidget
+        '''
         self.selected_streams = []
 
         root_video_item = self.inputFileTreeWidget.topLevelItem(0)
@@ -230,11 +238,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.streamLabel.text() + f"{self.selected_streams}")
 
     def onInputTreeItemChanged(self, item, column):
+        '''
+        Handle the onInputTreeItemChanged event of the TreeWidget
+        :param item: the changed item.
+        :param column: the column of the item.
+        '''
         if item.parent() is None:
             return
         self.showStreamInfo()
 
     def handleProbeFinishedEvent(self, data):
+        '''
+        A finished event from then probe thread.
+        :param data: A probing data result.
+        '''
         if data is None:
             self.infoLabel.setText("not found video information")
             return
@@ -292,6 +309,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # 转换进程事件
     def handleConvertProgressEvent(self, progress):
+        '''
+        A progress event from the convert thread.
+        :param progress: the progress value of converting.
+        '''
         self.progressBar.setValue(int(progress))
 
         timestamp_diff = datetime.now().timestamp() - self.convert_lastest_timestamp
@@ -310,12 +331,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def handleConvertFinishedEvent(self):
         self.setControlsEnabled(True)
-# -------------------------------------------------------------------
-# 创建一个新的线程类
 
 
 class ProbeThread(QThread):
-    # 定义一个信号，用于在探测完成时发送结果
+    '''
+    A probing thread
+    '''
     finished_event = Signal(object)
 
     def __init__(self):
@@ -341,11 +362,11 @@ class ProbeThread(QThread):
         finally:
             self.running = False
 
-# -------------------------------------------------------------------
-# 转换线程类
-
 
 class ConvertThread(QThread):
+    '''
+    A converting thread
+    '''
     finished_event = Signal()
     progress_event = Signal(float)
 
@@ -357,9 +378,7 @@ class ConvertThread(QThread):
 
     def setParams(self, params):
         self.params = params
-        pass
 
-    # 停止
     def stop(self):
         self.running = False
         if self.process is not None:
@@ -368,7 +387,6 @@ class ConvertThread(QThread):
             self.process = None
         self.wait()
 
-    # 运行
     def run(self):
         if self.params is None:
             self.finished_event.emit(-1)
@@ -409,8 +427,7 @@ class ConvertThread(QThread):
                 .global_args("-progress", "pipe:2", "-threads", "8", "-preset", "fast")
                 .overwrite_output()
             )
-            self.process = output_stream.run_async(
-                pipe_stdout=True, pipe_stderr=True)
+            self.process = output_stream.run_async(pipe_stdout=True, pipe_stderr=True)
 
             duration_time = 0
 

@@ -2,7 +2,6 @@
 
 from PySide6.QtWidgets import QDialog
 from ui.FileInfoDialog_ui import Ui_Dialog
-import json
 
 
 class FileInfoDialog(QDialog, Ui_Dialog):
