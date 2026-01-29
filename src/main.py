@@ -2,7 +2,6 @@
 
 import sys
 
-from PySide6.QtCore import QTranslator, QLocale, QLibraryInfo, QFile
 from PySide6.QtWidgets import QApplication
 from MainWindow import MainWindow
 

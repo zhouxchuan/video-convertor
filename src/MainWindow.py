@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import os
-# from tkinter import NO
 import ffmpeg
-import func
+import utils.func as func
 import re
 import json
 
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QTreeWidgetItem, QTreeWidget, QHeaderView, QDialog
 from PySide6.QtCore import QThread, Signal, Qt
-from datetime import datetime, timedelta
+from datetime import datetime
 from ui.MainWindow_ui import Ui_MainWindow
 from FileInfoDialog import FileInfoDialog
 from StreamSortDialog import StreamSortDialog
@@ -146,6 +145,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             dialog = FileInfoDialog(self)
             dialog.setFileInfo(self.file_probe_info)
             dialog.exec()
+        else:
+            self.infoLabel.setText("Pleast select a source file first.")
 
     def onOutputFileButtonClicked(self):
         '''
