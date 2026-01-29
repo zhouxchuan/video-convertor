@@ -335,7 +335,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Video Convertor 1.0 by Kenny Copyright@2025", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Video Convertor 2.0 by Kenny Copyright@2026", None))
         self.inputGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Source", None))
         self.sourceFileLabel.setText(QCoreApplication.translate("MainWindow", u"Input File:", None))
         self.inputFileButton.setText(QCoreApplication.translate("MainWindow", u"...", None))
